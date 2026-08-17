@@ -171,8 +171,30 @@ const NetflixPlayer: React.FC<NetflixPlayerProps> = ({
     return () => {
       hlsRef.current?.destroy();
       hlsRef.current = null;
+      video.pause();
+      video.removeAttribute("src");
+      video.load();
     };
   }, [src]);
+
+  // ── hard teardown on unmount / page hide (back navigation, bfcache) ──
+  useEffect(() => {
+    const stop = () => {
+      hlsRef.current?.destroy();
+      hlsRef.current = null;
+      const v = videoRef.current;
+      if (v) {
+        v.pause();
+        v.removeAttribute("src");
+        v.load();
+      }
+    };
+    window.addEventListener("pagehide", stop);
+    return () => {
+      window.removeEventListener("pagehide", stop);
+      stop();
+    };
+  }, []);
 
   // ── media events ─────────────────────────────────────────────────────
   useEffect(() => {
