@@ -120,7 +120,7 @@ const TvShowPlayer: React.FC<TvShowPlayerProps> = ({
           {...props}
         />
 
-        <div className="mx-auto grid w-full max-w-[1700px] gap-4 p-2 md:grid-cols-[minmax(0,1fr)_400px] md:h-[calc(100dvh-68px)]">
+        <div className="mx-auto grid h-[100dvh] w-full max-w-[1700px] grid-rows-[auto_minmax(0,1fr)] gap-4 p-2 md:h-[100dvh] md:grid-cols-[minmax(0,1fr)_400px] md:grid-rows-[minmax(0,1fr)]">
         <Card shadow="md" radius="none" className="relative aspect-video w-full bg-black md:h-full">
           <Skeleton className="absolute h-full w-full" />
           {!loading && PLAYER && src && (
