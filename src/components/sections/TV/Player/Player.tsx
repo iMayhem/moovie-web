@@ -17,6 +17,7 @@ import Hls from "hls.js";
 
 const TvShowPlayerHeader = dynamic(() => import("./Header"));
 const TvShowPlayerSourceSelection = dynamic(() => import("./SourceSelection"));
+const SourceList = dynamic(() => import("../../Player/SourceList"));
 const TvShowPlayerEpisodeSelection = dynamic(() => import("./EpisodeSelection"));
 
 export interface TvShowPlayerProps {
@@ -74,6 +75,8 @@ const TvShowPlayer: React.FC<TvShowPlayerProps> = ({
         fast: true,
         ads: false,
         resumable: false,
+        ping: l.latencyMs,
+        size: l.size,
       })),
     [links],
   );
@@ -150,7 +153,8 @@ const TvShowPlayer: React.FC<TvShowPlayerProps> = ({
           {...props}
         />
 
-        <Card shadow="md" radius="none" className="relative h-screen bg-black">
+        <div className="mx-auto grid w-full max-w-[1700px] gap-4 p-2 md:grid-cols-[minmax(0,1fr)_400px]">
+        <Card shadow="md" radius="none" className="relative aspect-video max-h-[70vh] w-full bg-black md:h-full">
           <Skeleton className="absolute h-full w-full" />
           {!loading && PLAYER && (
             <video
@@ -187,6 +191,13 @@ const TvShowPlayer: React.FC<TvShowPlayerProps> = ({
             </div>
           )}
         </Card>
+          <SourceList
+            links={links}
+            selected={selectedSource}
+            onSelect={setSelectedSource}
+            loading={loading}
+          />
+        </div>
       </div>
 
       <TvShowPlayerSourceSelection

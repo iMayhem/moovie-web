@@ -18,6 +18,7 @@ import Hls from "hls.js";
 
 const MoviePlayerHeader = dynamic(() => import("./Header"));
 const MoviePlayerSourceSelection = dynamic(() => import("./SourceSelection"));
+const SourceList = dynamic(() => import("../../Player/SourceList"));
 
 interface MoviePlayerProps {
   movie: MovieDetails;
@@ -52,6 +53,8 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie }) => {
         fast: true,
         ads: false,
         resumable: false,
+        ping: l.latencyMs,
+        size: l.size,
       })),
     [links],
   );
@@ -124,7 +127,8 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie }) => {
           onOpenSource={handlers.open}
           hidden={idle && !mobile}
         />
-        <Card shadow="md" radius="none" className="relative h-screen bg-black">
+        <div className="mx-auto grid w-full max-w-[1700px] gap-4 p-2 md:grid-cols-[minmax(0,1fr)_400px]">
+        <Card shadow="md" radius="none" className="relative aspect-video max-h-[70vh] w-full bg-black md:h-full">
           <Skeleton className="absolute h-full w-full" />
           {!loading && PLAYER && (
             <video
@@ -158,6 +162,13 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie }) => {
             </div>
           )}
         </Card>
+          <SourceList
+            links={links}
+            selected={selectedSource}
+            onSelect={setSelectedSource}
+            loading={loading}
+          />
+        </div>
       </div>
 
       <MoviePlayerSourceSelection

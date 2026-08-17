@@ -68,6 +68,8 @@ export type PlayersProps = {
   fast?: boolean;
   ads?: boolean;
   resumable?: boolean;
+  ping?: number;
+  size?: string;
 };
 
 export type Settings = {

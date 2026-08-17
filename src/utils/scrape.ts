@@ -6,6 +6,8 @@ export interface ScrapedLink {
   url: string;
   headers?: Record<string, string>;
   latencyMs?: number;
+  size?: string;
+  sizeBytes?: number;
 }
 
 export const apiBase = (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/+$/, "");
