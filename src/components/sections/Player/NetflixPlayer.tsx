@@ -497,7 +497,7 @@ const NetflixPlayer: React.FC<NetflixPlayerProps> = ({
           <button
             type="button"
             onClick={togglePlay}
-            className="text-white transition hover:scale-110"
+            className="flex h-9 w-9 items-center justify-center text-white transition hover:scale-110"
             aria-label={playing ? "Pause" : "Play"}
           >
             {playing ? (
@@ -510,7 +510,7 @@ const NetflixPlayer: React.FC<NetflixPlayerProps> = ({
           <button
             type="button"
             onClick={() => skip(-10)}
-            className="text-white transition hover:scale-110"
+            className="flex h-9 w-9 items-center justify-center text-white transition hover:scale-110"
             aria-label="Back 10 seconds"
           >
             <Replay10Icon className="h-7 w-7" />
@@ -519,7 +519,7 @@ const NetflixPlayer: React.FC<NetflixPlayerProps> = ({
           <button
             type="button"
             onClick={() => skip(10)}
-            className="text-white transition hover:scale-110"
+            className="flex h-9 w-9 items-center justify-center text-white transition hover:scale-110"
             aria-label="Forward 10 seconds"
           >
             <Forward10Icon className="h-7 w-7" />
@@ -530,7 +530,7 @@ const NetflixPlayer: React.FC<NetflixPlayerProps> = ({
             <button
               type="button"
               onClick={toggleMute}
-              className="text-white transition hover:scale-110"
+              className="flex h-9 w-9 items-center justify-center text-white transition hover:scale-110"
               aria-label={muted ? "Unmute" : "Mute"}
             >
               <VolumeIcon className="h-7 w-7" muted={muted} />
@@ -562,12 +562,12 @@ const NetflixPlayer: React.FC<NetflixPlayerProps> = ({
                 show();
               }}
               className={cn(
-                "text-white transition hover:scale-110",
+                "flex h-9 w-9 items-center justify-center text-white transition hover:scale-110",
                 settingsOpen && "text-[#E50914]",
               )}
               aria-label="Settings"
             >
-              <GearIcon className="h-7 w-7" />
+              <GearIcon className="h-6 w-6" />
             </button>
             {settingsOpen && (
               <div className="absolute bottom-12 right-0 w-52 rounded-md border border-white/10 bg-black/90 p-2 shadow-xl backdrop-blur">
@@ -622,13 +622,13 @@ const NetflixPlayer: React.FC<NetflixPlayerProps> = ({
           <button
             type="button"
             onClick={toggleFullscreen}
-            className="text-white transition hover:scale-110"
+            className="flex h-9 w-9 items-center justify-center text-white transition hover:scale-110"
             aria-label={fullscreen ? "Exit fullscreen" : "Fullscreen"}
           >
             {fullscreen ? (
-              <ExitFullscreenIcon className="h-7 w-7" />
+              <ExitFullscreenIcon className="h-6 w-6" />
             ) : (
-              <FullscreenIcon className="h-7 w-7" />
+              <FullscreenIcon className="h-6 w-6" />
             )}
           </button>
         </div>
