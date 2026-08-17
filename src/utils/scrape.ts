@@ -8,7 +8,6 @@ export interface ScrapedLink {
   latencyMs?: number;
   size?: string;
   sizeBytes?: number;
-  playable?: boolean;
 }
 
 export const apiBase = (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/+$/, "");
