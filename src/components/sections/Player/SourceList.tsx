@@ -88,6 +88,18 @@ const SourceList: React.FC<SourceListProps> = ({ links, selected, onSelect, load
                     {link.size}
                   </span>
                 )}
+                {typeof link.playable === "boolean" && (
+                  <span
+                    className={cn(
+                      "rounded-full px-1.5 py-0.5 text-[9px] font-semibold",
+                      link.playable
+                        ? "bg-success-500/15 text-success-500"
+                        : "bg-danger-500/15 text-danger-500",
+                    )}
+                  >
+                    {link.playable ? "Playable" : "May not play"}
+                  </span>
+                )}
                 {typeof link.latencyMs === "number" && (
                   <span
                     className={cn(
