@@ -44,7 +44,7 @@ const SourceList: React.FC<SourceListProps> = ({ links, selected, onSelect, load
   );
 
   return (
-    <div className="flex min-h-0 flex-col gap-3 rounded-xl border border-default-200 bg-default-50 p-3 md:max-h-[calc(100dvh-160px)]">
+    <div className="flex min-h-0 flex-col gap-3 rounded-xl border border-default-200 bg-default-50 p-3 md:h-full">
       <div className="flex items-center justify-between px-1">
         <span className="text-sm font-semibold">
           Sources{links.length > 0 && <span className="text-foreground-500"> · {links.length}</span>}
