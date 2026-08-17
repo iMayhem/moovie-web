@@ -10,7 +10,7 @@ import { Card, Skeleton, Spinner } from "@heroui/react";
 import { useDisclosure, useDocumentTitle, useIdle } from "@mantine/hooks";
 import dynamic from "next/dynamic";
 import { parseAsInteger, useQueryState } from "nuqs";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { MovieDetails } from "tmdb-ts/dist/types/movies";
 import useBreakpoints from "@/hooks/useBreakpoints";
 import { SpacingClasses } from "@/utils/constants";
@@ -27,7 +27,7 @@ interface MoviePlayerProps {
 const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie }) => {
   const title = mutateMovieTitle(movie);
   const year = movie.release_date?.slice(0, 4);
-  const { links, status, error } = useScrapeLinks({ title, year, type: "movie" });
+  const { links, status, error, abort } = useScrapeLinks({ title, year, type: "movie" });
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const hlsRef = useRef<Hls | null>(null);
@@ -57,6 +57,14 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie }) => {
         size: l.size,
       })),
     [links],
+  );
+
+  const selectSource = useCallback(
+    (index: number) => {
+      setSelectedSource(index);
+      abort();
+    },
+    [setSelectedSource, abort],
   );
 
   const PLAYER: ScrapedLink | null = useMemo(
@@ -165,7 +173,7 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie }) => {
           <SourceList
             links={links}
             selected={selectedSource}
-            onSelect={setSelectedSource}
+            onSelect={selectSource}
             loading={loading}
           />
         </div>
@@ -176,7 +184,7 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie }) => {
         onClose={handlers.close}
         players={players}
         selectedSource={selectedSource}
-        setSelectedSource={setSelectedSource}
+        setSelectedSource={selectSource}
       />
     </>
   );

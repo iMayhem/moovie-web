@@ -9,7 +9,7 @@ import { Card, Skeleton, Spinner } from "@heroui/react";
 import { useDisclosure, useDocumentTitle, useIdle } from "@mantine/hooks";
 import dynamic from "next/dynamic";
 import { parseAsInteger, useQueryState } from "nuqs";
-import { memo, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Episode, TvShowDetails } from "tmdb-ts";
 import useBreakpoints from "@/hooks/useBreakpoints";
 import { SpacingClasses } from "@/utils/constants";
@@ -40,7 +40,7 @@ const TvShowPlayer: React.FC<TvShowPlayerProps> = ({
   ...props
 }) => {
   const year = tv.first_air_date?.slice(0, 4);
-  const { links, status, error } = useScrapeLinks({
+  const { links, status, error, abort } = useScrapeLinks({
     title: props.seriesName,
     year,
     type: "tv",
@@ -79,6 +79,14 @@ const TvShowPlayer: React.FC<TvShowPlayerProps> = ({
         size: l.size,
       })),
     [links],
+  );
+
+  const selectSource = useCallback(
+    (index: number) => {
+      setSelectedSource(index);
+      abort();
+    },
+    [setSelectedSource, abort],
   );
 
   const PLAYER: ScrapedLink | null = useMemo(
@@ -194,7 +202,7 @@ const TvShowPlayer: React.FC<TvShowPlayerProps> = ({
           <SourceList
             links={links}
             selected={selectedSource}
-            onSelect={setSelectedSource}
+            onSelect={selectSource}
             loading={loading}
           />
         </div>
@@ -205,7 +213,7 @@ const TvShowPlayer: React.FC<TvShowPlayerProps> = ({
         onClose={sourceHandlers.close}
         players={players}
         selectedSource={selectedSource}
-        setSelectedSource={setSelectedSource}
+        setSelectedSource={selectSource}
       />
       <TvShowPlayerEpisodeSelection
         id={id}

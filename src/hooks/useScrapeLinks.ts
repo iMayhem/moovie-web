@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { apiBase, type ScrapedLink } from "@/utils/scrape";
 
 export interface ScrapeRequest {
@@ -15,6 +15,7 @@ export interface ScrapeState {
   links: ScrapedLink[];
   status: "idle" | "scraping" | "done" | "error";
   error: string | null;
+  abort: () => void;
 }
 
 export function useScrapeLinks(req: ScrapeRequest): ScrapeState {
@@ -22,16 +23,23 @@ export function useScrapeLinks(req: ScrapeRequest): ScrapeState {
   const [status, setStatus] = useState<ScrapeState["status"]>("idle");
   const [error, setError] = useState<string | null>(null);
 
+  const abortRef = useRef<AbortController | null>(null);
+  const userAbortedRef = useRef(false);
+
   const key = JSON.stringify([req.title, req.year, req.type, req.season, req.episode]);
 
   useEffect(() => {
     if (!req.title) return;
     let cancelled = false;
+    userAbortedRef.current = false;
 
     const run = async () => {
       setStatus("scraping");
       setLinks([]);
       setError(null);
+
+      const controller = new AbortController();
+      abortRef.current = controller;
 
       const qs = new URLSearchParams({ title: req.title, type: req.type, stream: "true" });
       if (req.year) qs.set("year", req.year);
@@ -39,7 +47,9 @@ export function useScrapeLinks(req: ScrapeRequest): ScrapeState {
       if (req.episode != null) qs.set("episode", String(req.episode));
 
       try {
-        const res = await fetch(`${apiBase}/api/scrape?${qs.toString()}`);
+        const res = await fetch(`${apiBase}/api/scrape?${qs.toString()}`, {
+          signal: controller.signal,
+        });
         if (!res.ok || !res.body) throw new Error(`Scrape failed: HTTP ${res.status}`);
         const reader = res.body.getReader();
         const decoder = new TextDecoder();
@@ -66,21 +76,32 @@ export function useScrapeLinks(req: ScrapeRequest): ScrapeState {
             }
           }
         }
-        if (!cancelled) setStatus("done");
+        if (!cancelled && !userAbortedRef.current) setStatus("done");
       } catch (e: any) {
-        if (!cancelled) {
+        if (cancelled) return;
+        if (userAbortedRef.current || e?.name === "AbortError") {
+          setStatus("done");
+        } else {
           setError(e?.message || "Scrape failed");
           setStatus("error");
         }
+      } finally {
+        abortRef.current = null;
       }
     };
 
     run();
     return () => {
       cancelled = true;
+      abortRef.current?.abort();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);
 
-  return { links, status, error };
+  const abort = useCallback(() => {
+    userAbortedRef.current = true;
+    abortRef.current?.abort();
+  }, []);
+
+  return { links, status, error, abort };
 }
