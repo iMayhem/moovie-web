@@ -9,7 +9,6 @@ import type { PlayersProps } from "@/types";
 import { Card, Skeleton, Spinner } from "@heroui/react";
 import { useDisclosure, useDocumentTitle, useIdle } from "@mantine/hooks";
 import dynamic from "next/dynamic";
-import { parseAsInteger, useQueryState } from "nuqs";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { MovieDetails } from "tmdb-ts/dist/types/movies";
 import useBreakpoints from "@/hooks/useBreakpoints";
@@ -32,10 +31,7 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie }) => {
   const idle = useIdle(3000);
   const { mobile } = useBreakpoints();
   const [opened, handlers] = useDisclosure(false);
-  const [selectedSource, setSelectedSource] = useQueryState<number>(
-    "src",
-    parseAsInteger.withDefault(0),
-  );
+  const [selectedSource, setSelectedSource] = useState(0);
   const [src, setSrc] = useState<string>("");
 
   useDocumentTitle(`Play ${title} | ${siteConfig.name}`);
@@ -102,7 +98,6 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie }) => {
           {!loading && PLAYER && src && (
             <div className="absolute inset-0 z-10">
               <NetflixPlayer
-                key={src}
                 src={src}
                 title={title}
                 subtitle={year}

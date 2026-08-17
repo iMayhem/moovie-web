@@ -8,7 +8,6 @@ import type { PlayersProps } from "@/types";
 import { Card, Skeleton, Spinner } from "@heroui/react";
 import { useDisclosure, useDocumentTitle, useIdle } from "@mantine/hooks";
 import dynamic from "next/dynamic";
-import { parseAsInteger, useQueryState } from "nuqs";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Episode, TvShowDetails } from "tmdb-ts";
@@ -54,10 +53,7 @@ const TvShowPlayer: React.FC<TvShowPlayerProps> = ({
   const idle = useIdle(3000);
   const [sourceOpened, sourceHandlers] = useDisclosure(false);
   const [episodeOpened, episodeHandlers] = useDisclosure(false);
-  const [selectedSource, setSelectedSource] = useQueryState<number>(
-    "src",
-    parseAsInteger.withDefault(0),
-  );
+  const [selectedSource, setSelectedSource] = useState(0);
   const [src, setSrc] = useState<string>("");
 
   useDocumentTitle(
@@ -130,7 +126,6 @@ const TvShowPlayer: React.FC<TvShowPlayerProps> = ({
           {!loading && PLAYER && src && (
             <div className="absolute inset-0 z-10">
               <NetflixPlayer
-                key={src}
                 src={src}
                 title={props.seriesName}
                 subtitle={`${props.seasonName} · E${episode.episode_number} · ${episode.name}`}
