@@ -9,15 +9,16 @@ import { Card, Skeleton, Spinner } from "@heroui/react";
 import { useDisclosure, useDocumentTitle, useIdle } from "@mantine/hooks";
 import dynamic from "next/dynamic";
 import { parseAsInteger, useQueryState } from "nuqs";
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Episode, TvShowDetails } from "tmdb-ts";
 import useBreakpoints from "@/hooks/useBreakpoints";
 import { SpacingClasses } from "@/utils/constants";
-import Hls from "hls.js";
 
 const TvShowPlayerHeader = dynamic(() => import("./Header"));
 const TvShowPlayerSourceSelection = dynamic(() => import("./SourceSelection"));
 const SourceList = dynamic(() => import("../../Player/SourceList"));
+const NetflixPlayer = dynamic(() => import("../../Player/NetflixPlayer"));
 const TvShowPlayerEpisodeSelection = dynamic(() => import("./EpisodeSelection"));
 
 export interface TvShowPlayerProps {
@@ -48,8 +49,7 @@ const TvShowPlayer: React.FC<TvShowPlayerProps> = ({
     episode: episode.episode_number,
   });
 
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const hlsRef = useRef<Hls | null>(null);
+  const router = useRouter();
   const { mobile } = useBreakpoints();
   const idle = useIdle(3000);
   const [sourceOpened, sourceHandlers] = useDisclosure(false);
@@ -94,52 +94,15 @@ const TvShowPlayer: React.FC<TvShowPlayerProps> = ({
     [links, selectedSource],
   );
 
-  useEffect(
-    () => () => {
-      hlsRef.current?.destroy();
-    },
-    [],
-  );
-
   useEffect(() => {
-    const video = videoRef.current;
-    if (!video || !PLAYER) {
+    let cancelled = false;
+    if (!PLAYER) {
       setSrc("");
       return;
     }
-    let cancelled = false;
-    hlsRef.current?.destroy();
-    hlsRef.current = null;
-
-    const playIt = () => {
-      video.play().catch(() => {
-        video.muted = true;
-        video.play().catch(() => {});
-      });
-    };
-
-    const attach = (url: string) => {
-      if (cancelled) return;
-      if (url.includes(".m3u8") && Hls.isSupported()) {
-        const hls = new Hls({ enableWorker: true });
-        hlsRef.current = hls;
-        hls.loadSource(url);
-        hls.attachMedia(video);
-        hls.on(Hls.Events.MANIFEST_PARSED, playIt);
-      } else {
-        video.src = url;
-        video.load();
-        playIt();
-      }
-    };
-
     resolvePlayableUrl(PLAYER).then((url) => {
-      if (!cancelled) {
-        setSrc(url);
-        attach(url);
-      }
+      if (!cancelled) setSrc(url);
     });
-
     return () => {
       cancelled = true;
     };
@@ -164,16 +127,25 @@ const TvShowPlayer: React.FC<TvShowPlayerProps> = ({
         <div className="mx-auto grid w-full max-w-[1700px] gap-4 p-2 md:grid-cols-[minmax(0,1fr)_400px] md:h-[calc(100dvh-68px)]">
         <Card shadow="md" radius="none" className="relative aspect-video w-full bg-black md:h-full">
           <Skeleton className="absolute h-full w-full" />
-          {!loading && PLAYER && (
-            <video
-              ref={videoRef}
-              key={src}
-              controls
-              autoPlay
-              playsInline
-              src={src}
-              className="absolute z-10 h-full w-full bg-black object-contain"
-            />
+          {!loading && PLAYER && src && (
+            <div className="absolute inset-0 z-10">
+              <NetflixPlayer
+                key={src}
+                src={src}
+                title={props.seriesName}
+                subtitle={`${props.seasonName} · E${episode.episode_number} · ${episode.name}`}
+                quality={PLAYER.quality}
+                autoPlay
+                onNext={
+                  props.nextEpisodeNumber != null
+                    ? () =>
+                        router.push(
+                          `/tv/${id}/${episode.season_number}/${props.nextEpisodeNumber}/player`,
+                        )
+                    : undefined
+                }
+              />
+            </div>
           )}
           {loading && (
             <div className="absolute z-20 flex h-full w-full flex-col items-center justify-center gap-4 bg-black/60">
