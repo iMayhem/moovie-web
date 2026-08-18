@@ -88,6 +88,11 @@ const SourceList: React.FC<SourceListProps> = ({ links, selected, onSelect, load
                     {link.size}
                   </span>
                 )}
+                {link.direct && (
+                  <span className="rounded-full bg-success-500/15 px-1.5 py-0.5 text-[9px] font-semibold text-success-500">
+                    Direct
+                  </span>
+                )}
                 {typeof link.latencyMs === "number" && (
                   <span
                     className={cn(
