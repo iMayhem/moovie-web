@@ -13,7 +13,7 @@ import {
 } from "react-icons/io5";
 
 export const siteConfig: SiteConfigType = {
-  name: "Moovie",
+  name: "Watchit",
   description: "Your only choice for a free movies and tv shows streaming website.",
   favicon: "/favicon.ico",
   navItems: [
