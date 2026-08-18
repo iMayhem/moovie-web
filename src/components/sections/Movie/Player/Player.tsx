@@ -9,7 +9,7 @@ import type { PlayersProps } from "@/types";
 import { Card, Skeleton, Spinner } from "@heroui/react";
 import { useDisclosure, useDocumentTitle, useIdle } from "@mantine/hooks";
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { MovieDetails } from "tmdb-ts/dist/types/movies";
 import useBreakpoints from "@/hooks/useBreakpoints";
 import { SpacingClasses } from "@/utils/constants";
@@ -33,6 +33,8 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie }) => {
   const [opened, handlers] = useDisclosure(false);
   const [selectedSource, setSelectedSource] = useState(0);
   const [src, setSrc] = useState<string>("");
+  const [srcDirect, setSrcDirect] = useState(false);
+  const fallbackRef = useRef(false);
 
   useDocumentTitle(`Play ${title} | ${siteConfig.name}`);
 
@@ -72,13 +74,27 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie }) => {
       setSrc("");
       return;
     }
+    fallbackRef.current = false;
+    const direct = Boolean(PLAYER.direct);
     resolvePlayableUrl(PLAYER).then((url) => {
-      if (!cancelled) setSrc(url);
+      if (!cancelled) {
+        setSrc(url);
+        setSrcDirect(direct);
+      }
     });
     return () => {
       cancelled = true;
     };
   }, [PLAYER]);
+
+  const handlePlayerError = useCallback(() => {
+    if (!srcDirect || fallbackRef.current || !PLAYER) return;
+    fallbackRef.current = true;
+    resolvePlayableUrl(PLAYER, true).then((url) => {
+      setSrc(url);
+      setSrcDirect(false);
+    });
+  }, [srcDirect, PLAYER]);
 
   const loading = status === "idle" || status === "scraping";
   const noSources = status === "done" && links.length === 0;
@@ -101,6 +117,7 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie }) => {
                 src={src}
                 title={title}
                 subtitle={year}
+                onError={handlePlayerError}
                 quality={PLAYER.quality}
                 autoPlay
               />

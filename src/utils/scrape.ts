@@ -8,6 +8,7 @@ export interface ScrapedLink {
   latencyMs?: number;
   size?: string;
   sizeBytes?: number;
+  direct?: boolean;
 }
 
 export const apiBase = (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/+$/, "");
@@ -32,11 +33,15 @@ export function pickBest(links: ScrapedLink[]): ScrapedLink | null {
     const qA = qualityRank(a.quality);
     const qB = qualityRank(b.quality);
     if (qA !== qB) return qB - qA;
+    const dA = a.direct ? 1 : 0;
+    const dB = b.direct ? 1 : 0;
+    if (dA !== dB) return dB - dA;
     return (a.latencyMs ?? Number.MAX_SAFE_INTEGER) - (b.latencyMs ?? Number.MAX_SAFE_INTEGER);
   })[0];
 }
 
-export async function resolvePlayableUrl(link: ScrapedLink): Promise<string> {
+export async function resolvePlayableUrl(link: ScrapedLink, forceProxy = false): Promise<string> {
+  if (!forceProxy && link.direct) return link.url;
   try {
     const res = await fetch(`${apiBase}/api/token`, {
       method: "POST",

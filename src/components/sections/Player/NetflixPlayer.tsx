@@ -11,6 +11,7 @@ interface NetflixPlayerProps {
   quality?: string;
   autoPlay?: boolean;
   onNext?: () => void;
+  onError?: () => void;
 }
 
 const formatTime = (t: number): string => {
@@ -98,7 +99,10 @@ const NetflixPlayer: React.FC<NetflixPlayerProps> = ({
   quality,
   autoPlay = true,
   onNext,
+  onError,
 }) => {
+  const onErrorRef = useRef(onError);
+  onErrorRef.current = onError;
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const barRef = useRef<HTMLDivElement>(null);
@@ -160,6 +164,7 @@ const NetflixPlayer: React.FC<NetflixPlayerProps> = ({
         if (data.fatal) {
           setError("Playback error — try another source");
           setWaiting(false);
+          onErrorRef.current?.();
         }
       });
     } else {
@@ -219,7 +224,10 @@ const NetflixPlayer: React.FC<NetflixPlayerProps> = ({
       for (let i = 0; i < v.buffered.length; i++) arr.push([v.buffered.start(i), v.buffered.end(i)]);
       setBuffered(arr);
     };
-    const onError = () => setError("Playback error — try another source");
+    const onError = () => {
+      setError("Playback error — try another source");
+      onErrorRef.current?.();
+    };
 
     v.addEventListener("play", onPlay);
     v.addEventListener("pause", onPause);
